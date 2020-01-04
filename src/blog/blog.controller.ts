@@ -38,7 +38,7 @@ export class BlogController {
         return res.status(HttpStatus.OK).json({
             message: 'Post has been successfully updated',
             post: editedPost,
-        })
+        });
     }
 
     @Delete('post/:postID')
@@ -48,6 +48,6 @@ export class BlogController {
         return res.status(HttpStatus.OK).json({
             message: 'Post has been deleted!',
             post: deletedPost,
-        })
+        });
     }
 }

@@ -9,11 +9,20 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 
+import { MongooseModule } from '@nestjs/mongoose';
+import { UserSchema } from 'src/users/schemas/user.schema';
+import { RefreshTokenSchema } from './schemas/refresh-token.schema';
+
 @Module({
-  imports: [UsersModule, PassportModule,
+  imports: [
+    MongooseModule.forFeature([
+      { name: 'User', schema: UserSchema },
+      { name: 'RefreshToken', schema: RefreshTokenSchema },
+    ]),
+    UsersModule, PassportModule,
   JwtModule.register({
     secret: jwtConstants.secret,
-    signOptions: { expiresIn: '60s' },
+    signOptions: { expiresIn: '6000s' },
   }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],

@@ -1,104 +1,77 @@
-import { Schema, model, Document } from 'mongoose';
-import { User } from '../interfaces/user.interface';
-import { genSalt, hash, compare } from 'bcrypt';
+import * as mongoose from 'mongoose';
+import * as validator from 'validator';
 import * as bcrypt from 'bcrypt';
-import { log } from 'console';
 
-const UserSchema = new Schema({
-  firstname: String,
-  lastname: String,
-  birthdate: Date,
-  email: {
-    type: String,
-    required: [true, 'cant be blank'], match: [/\S+@\S+\.\S+/, 'is invalid'],
-    unique: true,
-    lowercase: true,
-  },
-  username: {
-    type: String,
-    required: [true, 'cant be blank'], match: [/^[a-zA-Z0-9]+$/, 'is invalid'],
-    unique: true,
-    lowercase: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  address: {
-    number: Number,
-    street: String,
-    city: String,
-    region: String,
-    contry: String,
-  },
-  created: { type: Date, default: Date.now },
-  updated: { type: Date, default: Date.now },
-  deleted: { type: Date, default: Date.now },
-  phones: [String],
-  permissions:{
-    user: Boolean,
-    admin: Boolean,
-    super: Boolean,
-  },
+export const UserSchema = new mongoose.Schema ({
+    fullName: {
+        type: String,
+        minlength: 6,
+        maxlength: 255,
+        required: [true, 'NAME_IS_BLANK'],
+    },
+    email: {
+        type: String,
+        lowercase: true,
+        validate: validator.isEmail,
+        maxlength: 255,
+        minlength: 6,
+        required: [true, 'EMAIL_IS_BLANK'],
+    },
+    password: {
+        type: String,
+        minlength: 5,
+        maxlength: 1024,
+        required: [true, 'PASSWORD_IS_BLANK'],
+    },
+    bankAccountNumber: {
+        type: String,
+        maxlength: 32,
+    },
+    bankAccountOwnerName: {
+        type: String,
+        minlength: 6,
+        maxlength: 255,
+    },
+    roles: {
+        type: [String],
+        default: ['user'],
+    },
+    verification: {
+        type: String,
+        validate: validator.isUUID,
+    },
+    verified: {
+        type: Boolean,
+        default: false,
+    },
+    verificationExpires: {
+        type: Date,
+        default: Date.now,
+    },
+    loginAttempts: {
+        type: Number,
+        default: 0,
+    },
+    blockExpires: {
+      type: Date,
+      default: Date.now,
+    },
+}, {
+    versionKey: false,
+    timestamps: true,
 });
 
-UserSchema.methods.encrypPassword = async (password: string): Promise<string> => {
-    const salt = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salt);
-};
-
-UserSchema.methods.validatePassword = async (password: string): Promise<boolean> => {
-    return await bcrypt.compare(password, this.password);
-};
-
-/*
-UserSchema.methods.encrypPassword = async (
-  password: string,
-): Promise<string> => {
-  const salt = await genSalt(10);
-  return hash(password, salt);
-};
-
-UserSchema.methods.validatePassword = async (
-  password: string,
-): Promise<boolean> => {
-  return await compare(password, this.password);
-};
-
-UserSchema.pre('save', function(next) {
-
-    const user = this;
-
-    // Make sure not to rehash the password if it is already hashed
-    if (!user.isModified('password')) { return next(); }
-
-    // Generate a salt and use it to hash the user's password
-    genSalt(10, (err, salt) => {
-
-        if (err) { return next(err); }
-
-        hash(user.password, salt, (err, hashh) => {
-
-            if (err) { return next(err); }
-            user.password = hashh;
-            next();
-
-        });
-
-    });
-
+UserSchema.pre('save', async function(next: mongoose.HookNextFunction) {
+    try {
+      if (!this.isModified('password')) {
+        return next();
+      }
+      // tslint:disable-next-line:no-string-literal
+      const hashed = await bcrypt.hash(this['password'], 10);
+      // tslint:disable-next-line:no-string-literal
+      this['password'] = hashed;
+      return next();
+    } catch (err) {
+      return next(err);
+    }
 });
-
-UserSchema.methods.checkPassword = function(attempt, callback){
-
-    const user = this;
-
-    compare(attempt, user.password, (err, isMatch) => {
-        if(err) { return callback(err); }
-        callback(null, isMatch);
-    });
-
-};
-*/
-
-export default UserSchema;

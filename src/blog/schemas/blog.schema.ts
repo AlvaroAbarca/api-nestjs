@@ -5,5 +5,7 @@ export const BlogSchema = new mongoose.Schema({
     description: String,
     body: String,
     author: String,
+    path: String,
+    tags: [String],
     date_posted: { type: Date, default: Date.now },
 });

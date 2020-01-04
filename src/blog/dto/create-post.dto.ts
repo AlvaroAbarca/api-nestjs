@@ -4,4 +4,6 @@ export class CreatePostDTO {
     readonly body: string;
     readonly author: string;
     readonly date_posted: Date;
+    readonly path: string;
+    readonly tags: [string];
 }

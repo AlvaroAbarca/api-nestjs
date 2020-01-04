@@ -22,5 +22,10 @@ export class UserDto {
     readonly updated: Date;
     readonly deleted: Date;
     readonly phones: [string];
+    readonly permisions: {
+        user: boolean,
+        admin: boolean,
+        super: boolean,
+    };
 
 }
