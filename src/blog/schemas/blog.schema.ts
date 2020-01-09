@@ -6,4 +6,7 @@ export const BlogSchema = new mongoose.Schema({
     body: String,
     author: String,
     date_posted: { type: Date, default: Date.now },
+}, {
+    versionKey: false,
+    timestamps: true,
 });

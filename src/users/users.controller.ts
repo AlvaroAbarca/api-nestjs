@@ -5,12 +5,12 @@ import { UserDto } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
+@UseGuards(AuthGuard('jwt'))
 export class UsersController {
 
     constructor(private userService: UsersService) { }
 
     // Get Users
-    @UseGuards(AuthGuard('jwt'))
     @Get('/')
     async getProducts(@Res() res) {
         const users = await this.userService.getUsers();
@@ -35,7 +35,7 @@ export class UsersController {
         });
     }
 
-    // Delete Product: /delete?productID=5c9d45e705ea4843c8d0e8f7
+    // Delete User: /delete?productID=5c9d45e705ea4843c8d0e8f7
     @Delete('/:userID')
     async deleteProduct(@Res() res, @Param('userID') userID) {
         const userDeleted = await this.userService.deleteUser(userID);
@@ -46,7 +46,7 @@ export class UsersController {
         });
     }
 
-    // Update Product: /update?productID=5c9d45e705ea4843c8d0e8f7
+    // Update User: /update?productID=5c9d45e705ea4843c8d0e8f7
     @Put('/:userID')
     async updateProduct(@Res() res, @Body() userDto: UserDto, @Param('userID') userID) {
         const updateUser = await this.userService.updateUser(userID, userDto);

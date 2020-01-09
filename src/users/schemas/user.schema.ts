@@ -1,18 +1,28 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, HookNextFunction } from 'mongoose';
 import { User } from '../interfaces/user.interface';
 import { genSalt, hash, compare } from 'bcrypt';
-import * as bcrypt from 'bcrypt';
-import { log } from 'console';
 
-const UserSchema = new Schema({
-  firstname: String,
-  lastname: String,
+import * as bcrypt from 'bcrypt';
+import * as validator from 'validator';
+
+export const UserSchema = new Schema({
+  firstname:  {
+    type: String,
+    required: [true, 'cant be blank'], match: [/^[a-zA-Z]+$/, 'is invalid'],
+  },
+  lastname:  {
+    type: String,
+    required: [true, 'cant be blank'], match: [/^[a-zA-Z]+$/, 'is invalid'],
+  },
   birthdate: Date,
   email: {
     type: String,
+    lowercase: true,
+    validate: validator.isEmail,
+    maxlength: 255,
+    minlength: 6,
     required: [true, 'cant be blank'], match: [/\S+@\S+\.\S+/, 'is invalid'],
     unique: true,
-    lowercase: true,
   },
   username: {
     type: String,
@@ -22,83 +32,38 @@ const UserSchema = new Schema({
   },
   password: {
     type: String,
-    required: true,
+    minlength: 5,
+    maxlength: 1024,
+    required: [true, 'PASSWORD_IS_BLANK'],
   },
   address: {
-    number: Number,
+    number: String,
     street: String,
     city: String,
     region: String,
     contry: String,
   },
-  created: { type: Date, default: Date.now },
-  updated: { type: Date, default: Date.now },
-  deleted: { type: Date, default: Date.now },
   phones: [String],
-  permissions:{
-    user: Boolean,
-    admin: Boolean,
-    super: Boolean,
+  roles: {
+    type: [String],
+    default: ['user'],
   },
+}, {
+  versionKey: false,
+  timestamps: true,
 });
 
-UserSchema.methods.encrypPassword = async (password: string): Promise<string> => {
-    const salt = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salt);
-};
-
-UserSchema.methods.validatePassword = async (password: string): Promise<boolean> => {
-    return await bcrypt.compare(password, this.password);
-};
-
-/*
-UserSchema.methods.encrypPassword = async (
-  password: string,
-): Promise<string> => {
-  const salt = await genSalt(10);
-  return hash(password, salt);
-};
-
-UserSchema.methods.validatePassword = async (
-  password: string,
-): Promise<boolean> => {
-  return await compare(password, this.password);
-};
-
-UserSchema.pre('save', function(next) {
-
-    const user = this;
-
-    // Make sure not to rehash the password if it is already hashed
-    if (!user.isModified('password')) { return next(); }
-
-    // Generate a salt and use it to hash the user's password
-    genSalt(10, (err, salt) => {
-
-        if (err) { return next(err); }
-
-        hash(user.password, salt, (err, hashh) => {
-
-            if (err) { return next(err); }
-            user.password = hashh;
-            next();
-
-        });
-
-    });
-
+UserSchema.pre('save', async function(next: HookNextFunction) {
+  try {
+    if (!this.isModified('password')) {
+      return next();
+    }
+    // tslint:disable-next-line:no-string-literal
+    const hashed = await bcrypt.hash(this['password'], 10);
+    // tslint:disable-next-line:no-string-literal
+    this['password'] = hashed;
+    return next();
+  } catch (err) {
+    return next(err);
+  }
 });
-
-UserSchema.methods.checkPassword = function(attempt, callback){
-
-    const user = this;
-
-    compare(attempt, user.password, (err, isMatch) => {
-        if(err) { return callback(err); }
-        callback(null, isMatch);
-    });
-
-};
-*/
-
-export default UserSchema;

@@ -7,15 +7,14 @@ export interface User extends Document {
     readonly email: string;
     readonly username: string;
     readonly password: string;
-    readonly direction: string;
-    readonly city: string;
-    readonly region: string;
-    readonly contry: string;
-    readonly created: Date;
-    readonly updated: Date;
-    readonly deleted: Date;
+    readonly address: {
+        number: string,
+        street: string,
+        city: string,
+        region: string,
+        contry: string,
+    };
     readonly phones: [string];
+    readonly roles: [string];
 
-    encrypPassword(password: string): Promise<string>;
-    validatePassword(password: string): Promise<boolean>;
 }

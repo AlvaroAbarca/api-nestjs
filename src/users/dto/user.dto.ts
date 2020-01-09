@@ -12,15 +12,13 @@ export class UserDto {
     @IsNotEmpty()
     readonly password: string;
     readonly address: {
-        readonly number: number;
+        readonly number: string;
         readonly street: string;
         readonly city: string;
         readonly region: string;
         readonly contry: string;
     };
-    readonly created: Date;
-    readonly updated: Date;
-    readonly deleted: Date;
     readonly phones: [string];
+    readonly roles: [string];
 
 }
