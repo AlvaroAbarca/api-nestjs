@@ -16,5 +16,4 @@ export interface User extends Document {
     };
     readonly phones: [string];
     readonly roles: [string];
-
 }
