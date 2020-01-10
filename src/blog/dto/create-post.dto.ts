@@ -3,5 +3,6 @@ export class CreatePostDTO {
     readonly description: string;
     readonly body: string;
     readonly author: string;
-    readonly date_posted: Date;
+    // tslint:disable-next-line: variable-name
+    readonly cat_id: number;
 }
